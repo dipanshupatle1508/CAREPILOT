@@ -1,0 +1,8 @@
+langgraph>=0.2
+openai>=1.40
+requests
+
+# OPTIONAL. Skip these if installation fails; the project still works without them.
+# chromadb              # better long-term memory. Can fail on very new Python versions (e.g. 3.14); falls back to a file.
+# sentence-transformers # only if you set EMBED_MODEL (e.g. BAAI/bge-m3)
+# faster-whisper        # only for --audio voice input
