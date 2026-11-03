@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>carePILOT.AI: Agentic Care Infrastructure</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<style>
+:root{--bg:#fff;--alt:#f8f8f8;--ink:#111;--mut:#6b6b6b;--line:#eaeaea;--r:14px;--crit:#b42318}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Inter Tight","Noto Sans Devanagari",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none!important}
+.err{background:var(--ink);color:#fff;text-align:center;padding:8px;font-size:14px}
+/* nav */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:20px;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em;cursor:pointer;white-space:nowrap;background:none;border:0;padding:0}
+nav{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;padding:8px 12px;border-radius:8px;color:var(--mut);cursor:pointer;white-space:nowrap;font-size:14.5px;transition:color .2s,background .2s}
+nav button:hover{color:var(--ink);background:var(--alt)}
+nav button[aria-current=page]{color:var(--ink);font-weight:700;background:var(--alt)}
+#alertpill{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:5px 14px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap}
+.flags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:12px;color:var(--mut);font-weight:600}
+.tag.k{background:var(--ink);border-color:var(--ink);color:#fff}
+/* layout */
+main{max-width:1240px;margin:0 auto;padding:0 24px 80px}
+.view{animation:vin .35s ease}@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+h1{font-size:clamp(40px,7vw,88px);line-height:1;letter-spacing:-.045em;margin:0;font-weight:700}
+h2{font-size:clamp(26px,3.4vw,40px);letter-spacing:-.03em;line-height:1.1;margin:0 0 6px;font-weight:700}
+h3{font-size:16px;margin:0 0 10px;letter-spacing:-.01em}
+.lead{color:var(--mut);font-size:clamp(17px,1.6vw,20px);max-width:56ch}
+.mut{color:var(--mut);font-size:14px}
+.pt{padding-top:44px}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:20px;background:var(--bg);transition:border-color .2s}
+.card:hover{border-color:#bdbdbd}.card.alt{background:var(--alt)}
+.g2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+.gf{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.stack{display:grid;gap:16px;align-content:start}
+@media(max-width:900px){.g2{grid-template-columns:1fr}.top-in{padding:0 14px;gap:10px}main{padding:0 14px 60px}}
+.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:11px 22px;font-weight:600;cursor:pointer;min-height:44px;transition:transform .15s,background .2s,color .2s}
+.btn:hover{transform:translateY(-1px)}.btn.o{background:var(--bg);color:var(--ink)}.btn.o:hover{background:var(--ink);color:#fff}
+.btn.s{min-height:34px;padding:0 14px;font-size:13.5px}.btn:disabled{opacity:.45;cursor:wait}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* risk */
+.lv{display:inline-block;border:1px solid var(--ink);border-radius:999px;padding:1px 11px;font-size:12px;font-weight:700;letter-spacing:.03em}
+.lv-LOW{border-color:var(--line);color:var(--mut)}.lv-HIGH{background:var(--alt);border-width:2px}
+.lv-CRITICAL{background:var(--crit);border-color:var(--crit);color:#fff}.lv-NONE{border-color:var(--line);color:var(--mut)}
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;align-items:center;padding:56px 0 30px}
+.hero .row{margin-top:28px}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:30px}}
+.tri{width:100%;max-width:520px;justify-self:center}
+.tri .spin{transform-origin:260px 270px;animation:spin 60s linear infinite}
+.tri .spin2{transform-origin:260px 270px;animation:spin 90s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sect{background:var(--alt);margin:40px -24px 0;padding:56px 24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+@media(max-width:900px){.sect{margin:40px -14px 0;padding:40px 14px}}
+.ag{cursor:pointer;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:22px;transition:transform .2s,border-color .2s}
+.ag:hover{transform:translateY(-3px);border-color:var(--ink)}
+.ag svg{display:block;margin-bottom:14px}
+.pipe{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.pn{border:1px solid var(--line);border-radius:999px;padding:3px 13px;font-size:13px;color:var(--mut);transition:all .25s}
+.pn.on{border-color:var(--ink);background:var(--ink);color:#fff;transform:translateY(-2px)}
+.pn.done{border-color:var(--ink);color:var(--ink)}
+/* network */
+.net{width:100%;height:auto;display:block}
+.flow{stroke-dasharray:4 6;animation:flow 1.4s linear infinite}@keyframes flow{to{stroke-dashoffset:-20}}
+.an{cursor:pointer}.an rect{fill:#fff;stroke:#111;stroke-width:1;transition:fill .25s}
+.an:hover rect,.an.sel rect{fill:#111}.an:hover text,.an.sel text{fill:#fff}
+.an.pulse rect{fill:#111;animation:pl 1s ease}@keyframes pl{50%{stroke-width:5}}
+.an.pulse text{fill:#fff}
+.ring{transform-origin:400px 260px;animation:spin 40s linear infinite}
+/* chat */
+.chat{display:flex;flex-direction:column;height:520px}
+.log{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px 2px 10px}
+.msg{max-width:86%;padding:10px 15px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:17px}
+.msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--alt);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.sys{align-self:center;color:var(--mut);font-size:13px;padding:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 13px;font-size:13px;cursor:pointer;transition:border-color .2s}.chip:hover{border-color:var(--ink)}
+.comp{display:flex;gap:8px}
+textarea{flex:1;resize:none;font-size:17px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+select{padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:14px}
+/* lists */
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:14.5px;margin:0}.kv dt{color:var(--mut)}.kv dd{margin:0;overflow-wrap:anywhere}
+ul.pl{list-style:none;margin:0;padding:0}ul.pl li{padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}ul.pl li:last-child{border:0}
+.med{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.med:last-child{border:0}
+.due{border:1px solid var(--ink);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-weight:600}
+.big{font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1.1}
+.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--ink);transition:width .6s}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:600}
+.empty{border:1px dashed #cfcfcf;border-radius:12px;padding:18px;color:var(--mut);font-size:14px;text-align:center}
+.banner{border-radius:12px;padding:14px 18px;font-weight:700;margin-bottom:14px;border:1px solid var(--ink)}.banner.crit{background:var(--crit);border-color:var(--crit);color:#fff;font-size:19px}
+a.call{display:inline-block;margin:0 8px 8px 0;padding:11px 20px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;text-decoration:none}
+#map{height:340px;border-radius:12px;border:1px solid var(--line)}
+.skel{height:14px;border-radius:6px;background:linear-gradient(90deg,var(--alt),#eee,var(--alt));background-size:200% 100%;animation:sk 1.2s infinite}@keyframes sk{to{background-position:-200% 0}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:50;animation:vin .25s}
+input.tx{flex:1;min-width:160px;font-size:16px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.disc{margin-top:40px;font-size:12px;color:var(--mut);text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="err" class="err" hidden>Cannot reach the server. Check that <code>python server.py</code> is running.</div>
+<header class="top"><div class="top-in">
+  <button class="logo" data-go="overview" aria-label="carePILOT.AI home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6"><path d="M12 3 21 19H3z"/><path d="M12 9.5 16.5 17h-9z" fill="#111"/></svg>carePILOT.AI</button>
+  <nav id="nav" aria-label="Main"></nav>
+  <button id="alertpill" hidden></button>
+</div></header>
+
+<main>
+<!-- OVERVIEW -->
+<section class="view" id="v-overview">
+  <div class="hero">
+    <div>
+      <h1>Agentic Care Infrastructure</h1>
+      <p class="lead" style="margin-top:22px">Intelligent agents working together to deliver proactive, personalized and continuous care for healthier ageing.</p>
+      <div class="row"><button class="btn" data-go="patient">Explore Dashboard</button><button class="btn o" data-go="agents">View AI Agents</button></div>
+      <div class="row" style="margin-top:22px"><span class="mut" id="who">Loading patient…</span><span id="status" class="flags"></span></div>
+    </div>
+    <svg class="tri" viewBox="0 0 520 540" fill="none" stroke="#111" aria-hidden="true">
+      <g class="spin" stroke-width=".8"><path d="M260 30 480 440H40z"/><path d="M260 90 420 400H100z"/><path d="M260 150 360 360H160z"/></g>
+      <g class="spin2" stroke-width=".8" opacity=".5"><path d="M260 510 40 100h440z"/><circle cx="260" cy="270" r="215"/></g>
+      <path d="M260 30V510M40 440 480 100M480 440 40 100" stroke="#eaeaea"/>
+      <path d="M260 190 330 320H190z" fill="#111"/><circle cx="260" cy="270" r="8" fill="#fff" stroke="none"/>
+      <g fill="#fff" stroke-width="1.4"><circle cx="260" cy="30" r="9"/><circle cx="480" cy="440" r="9"/><circle cx="40" cy="440" r="9"/><circle cx="260" cy="510" r="9"/></g>
+    </svg>
+  </div>
+  <div class="sect">
+    <h2>Four agents, one care plan</h2>
+    <p class="lead" style="margin-bottom:26px">Each agent has its own job. All of them read from and write to the same plan.</p>
+    <div class="gf" id="agcards"></div>
+  </div>
+  <div class="pt"><h3>Latest agent run</h3><div class="pipe" id="pipe"></div></div>
+</section>
+
+<!-- AGENTS -->
+<section class="view pt" id="v-agents" hidden>
+  <h2>AI agent network</h2><p class="lead">One patient at the centre. Four agents around them. Every agent works through the shared evolving care plan.</p>
+  <div class="card" style="margin-top:22px;padding:8px">
+    <svg class="net" viewBox="0 0 800 520" role="img" aria-label="Agent network">
+      <g stroke="#111" stroke-width="1" fill="none">
+        <path class="flow" d="M200 110 335 215"/><path class="flow" d="M600 110 465 215"/><path class="flow" d="M200 410 335 305"/><path class="flow" d="M600 410 465 305"/>
+        <circle class="ring" cx="400" cy="260" r="100" stroke-dasharray="3 7"/>
+        <circle cx="400" cy="260" r="62" stroke="#eaeaea" fill="#f8f8f8"/>
+      </g>
+      <circle cx="400" cy="260" r="26" fill="#111"/><text x="400" y="265" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Patient</text>
+      <text x="400" y="388" text-anchor="middle" font-size="13" font-weight="700" fill="#111">Shared evolving care plan</text>
+      <g id="nodes" font-size="14" font-weight="600" text-anchor="middle"></g>
+    </svg>
+  </div>
+  <div class="g2" style="margin-top:16px"><div class="card alt" id="agdetail"></div><div class="card"><h3>Live pipeline</h3><div class="pipe" id="pipe2"></div><div class="mut">Send a message on the Patient page and watch the agents run in order.</div></div></div>
+</section>
+
+<!-- PATIENT -->
+<section class="view pt" id="v-patient" hidden>
+  <h2>Patient</h2><p class="lead" style="margin-bottom:22px" id="who2"></p>
+  <div class="g2">
+    <div class="card chat">
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="chips" id="chips"></div>
+      <div class="comp"><textarea id="input" rows="2" placeholder="Type here, or press the microphone" aria-label="Message"></textarea>
+        <button class="btn o" id="mic" aria-label="Speak" title="Voice input">🎤</button><button class="btn" id="send">Send</button></div>
+    </div>
+    <div class="stack">
+      <div class="card"><h3>Profile</h3><dl class="kv" id="prof"></dl></div>
+      <div class="card"><h3>Medicines today</h3><div id="due"></div><div id="meds"></div></div>
+      <div class="card"><h3>Water today</h3><div id="water"></div><button class="btn s" id="drink" style="margin-top:10px">I drank a glass (250 ml)</button></div>
+      <div class="card"><h3>Current status</h3><div id="stat"></div></div>
+    </div>
+  </div>
+  <div class="g2" style="margin-top:16px">
+    <div class="card"><h3>Symptom history</h3><div style="overflow:auto"><table><thead><tr><th>When</th><th>Symptom</th><th>Severity</th><th>Duration</th></tr></thead><tbody id="symp"></tbody></table></div></div>
+    <div class="card"><h3>Appointments</h3><div class="empty">No appointments are recorded by the backend yet.</div></div>
+  </div>
+</section>
+
+<!-- CARE PLAN -->
+<section class="view pt" id="v-careplan" hidden>
+  <h2>Shared care plan</h2><p class="lead" style="margin-bottom:22px">What every agent is working from right now, built from the live record.</p>
+  <div class="gf" id="plan"></div>
+</section>
+
+<!-- MEDICATIONS -->
+<section class="view pt" id="v-meds" hidden>
+  <h2>Medications</h2><p class="lead" style="margin-bottom:22px">Schedule and adherence.</p>
+  <div class="g2"><div class="card"><div id="due2"></div><div id="meds2"></div></div>
+  <div class="card"><h3>Adherence</h3><div class="big" id="adh">–</div><div class="bar"><i id="adhbar" style="width:0"></i></div><div class="mut" style="margin-top:8px">Share of recent doses actually taken.</div></div></div>
+</section>
+
+<!-- CAREGIVERS -->
+<section class="view pt" id="v-caregivers" hidden>
+  <h2>Caregivers</h2><p class="lead" style="margin-bottom:22px">What family has been told.</p>
+  <div class="gf"><div class="card"><h3>Current risk</h3><div id="cg-risk"></div></div>
+  <div class="card"><h3>Medication adherence</h3><div class="big" id="adh2">–</div></div>
+  <div class="card"><h3>Missed dose</h3><div class="row"><select id="missmed" aria-label="Medicine"></select><button class="btn s o" id="simmissed">Simulate a missed dose</button></div></div></div>
+  <div class="card" style="margin-top:16px"><h3>Updates sent to family</h3><ul class="pl" id="cg-notes"></ul></div>
+</section>
+
+<!-- FRIENDS -->
+<section class="view pt" id="v-friends" hidden>
+  <h2>Friends</h2><p class="lead" style="margin-bottom:22px">Stay connected with friends who are also on carePILOT.AI, and see how their day is going.</p>
+  <div id="fr-off" class="empty" hidden></div>
+  <div id="fr-on">
+    <div class="gf" style="margin-bottom:22px">
+      <div class="card"><h3>Add a friend</h3><div class="row"><input class="tx" type="text" id="fr-id" placeholder="Friend’s patient ID or phone number" aria-label="Friend’s patient ID or phone number"><button class="btn s" id="fr-add">Send request</button></div><div class="mut" id="fr-msg" style="margin-top:8px"></div><div class="mut" id="fr-me" style="margin-top:4px"></div></div>
+      <div class="card"><h3>Friend requests</h3><div id="fr-in"></div></div>
+    </div>
+    <h3>My friends</h3><div class="gf" id="fr-list"></div>
+  </div>
+</section>
+
+<!-- REPORTS -->
+<section class="view pt" id="v-reports" hidden>
+  <h2>Reports</h2><p class="lead" style="margin-bottom:22px">For the clinician.</p>
+  <div class="g2"><div class="card"><h3>Doctor summary (SBAR)</h3><div id="sbar" style="white-space:pre-wrap;font-size:14.5px"></div><div class="mut" id="sbar-ts" style="margin-top:8px"></div></div>
+  <div class="card"><h3>Escalations to clinician</h3><ul class="pl" id="cl-notes"></ul></div></div>
+  <div class="card" style="margin-top:16px"><h3>Risk history</h3><ul class="pl" id="risk-hist"></ul></div>
+</section>
+
+<!-- EMERGENCY -->
+<section class="view pt" id="v-emergency" hidden>
+  <h2>Emergency recommendation</h2>
+  <div id="em-empty" class="empty" style="margin-top:18px">None yet. This appears when a message is rated HIGH or CRITICAL. Try the Chest pain example on the Patient page.</div>
+  <div id="em" hidden style="margin-top:18px">
+    <div id="em-banner" class="banner"></div><div id="em-calls"></div>
+    <div class="g2"><div class="stack"><div class="card"><h3>Why this recommendation</h3><dl class="kv" id="em-kv"></dl></div>
+      <div class="card"><h3>Ranked facilities</h3><ul class="pl" id="em-fac"></ul><div class="mut">Facility type is estimated from the name. Bed and ICU availability is not live data.</div></div></div>
+    <div class="card"><h3>Map</h3><div id="map"></div><div class="mut" id="map-note" style="margin-top:6px"></div></div></div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section class="view pt" id="v-settings" hidden>
+  <h2>Settings</h2><p class="lead" style="margin-bottom:22px">Voice, location and demo data.</p>
+  <div class="gf">
+    <div class="card"><h3>Voice language</h3><select id="lang"><option value="hi-IN">Hindi</option><option value="en-IN">English (India)</option><option value="mr-IN">Marathi</option></select></div>
+    <div class="card"><h3>Location</h3><label class="row"><input type="checkbox" id="geo"> Use my real location for facility search</label></div>
+    <div class="card"><h3>Switch patient</h3><div class="row"><input class="tx" type="text" id="sw-id" placeholder="Patient ID, e.g. sunita-002" aria-label="Patient ID"><button class="btn s" id="sw-go">Switch</button></div><div class="mut" id="sw-now" style="margin:8px 0"></div><button class="btn s o" id="sw-home">Back to default patient</button></div>
+    <div class="card"><h3>Demo data</h3><button class="btn s o" id="reset">Reset demo data</button></div>
+  </div>
+</section>
+<p class="disc">Hackathon prototype, not a medical device. It does not diagnose. In an emergency call your local emergency number.</p>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
+const LV=["LOW","MEDIUM","HIGH","CRITICAL"];
+const NODES=[["patient_agent","Patient"],["risk_agent","Risk"],["emergency_agent","Emergency"],["clinician_agent","Clinician"],["caregiver_agent","Caregiver"],["wellness_agent","Wellness"]];
+const SCENARIOS=[["Routine check-in","Good morning! I took my Metformin. Feeling fine today."],["Headache + high BP","मुझे सुबह से सिरदर्द है, BP 165/102 आया है और sugar 210 है।"],["Chest pain","मुझे सीने में तेज दर्द हो रहा है, 30 मिनट से, BP 190/115"]];
+const AGENTS={
+ patient:{n:"Patient Agent",x:200,y:110,b:["patient_agent"],t:["Calls and messages the patient in their preferred language.","Tracks medication adherence.","Collects vitals and symptoms.","Remembers patient history across months."]},
+ caregiver:{n:"Caregiver Agent",x:600,y:110,b:["caregiver_agent"],t:["Keeps family members informed.","Shares important patient updates.","Tracks caregiving activities.","Sends relevant notifications."]},
+ clinician:{n:"Clinician Agent",x:200,y:410,b:["risk_agent","clinician_agent"],t:["Prepares doctors before appointments.","Summarizes patient history.","Monitors concerning health trends.","Escalates potentially dangerous changes."]},
+ emergency:{n:"Emergency Agent",x:600,y:410,b:["emergency_agent"],t:["Steps in when a message is rated HIGH or CRITICAL.","Recommends transport, facility type and the right specialist.","Ranks nearby facilities and shows them on a map.","Gives one-tap emergency and ambulance numbers."]}};
+const VIEWS=[["overview","Overview"],["patient","Patient"],["agents","AI Agents"],["careplan","Care Plan"],["meds","Medications"],["caregivers","Caregivers"],["friends","Friends"],["reports","Reports"],["settings","Settings"]];
+const PID=new URLSearchParams(location.search).get("pid"),PQ=PID?"?pid="+encodeURIComponent(PID):"",WP=o=>PID?{...o,pid:PID}:o;
+let S=null,busy=false,map=null,layer=null,myLoc=null,timers=[],cur="overview",selAg="patient";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lvl=l=>LV.includes(l)?l:"NONE";
+const badge=l=>`<span class="lv lv-${lvl(l)}">${esc(l||"NO DATA")}</span>`;
+const empty=t=>`<div class="empty">${esc(t)}</div>`;
+const toast=t=>{const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
+
+async function api(path,body){
+  if(PID){if(body===undefined){if(!path.includes("pid="))path+=(path.includes("?")?"&":"?")+"pid="+encodeURIComponent(PID)}else if(body.pid===undefined)body={...body,pid:PID}}
+  const r=await fetch(path,body===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const j=await r.json(); if(!r.ok) throw new Error(j.error||r.statusText); return j;
+}
+
+/* navigation */
+$("nav").innerHTML=VIEWS.map(([k,l])=>`<button data-go="${k}">${l}</button>`).join("");
+function go(v){
+  cur=v;
+  document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="v-"+v);
+  document.querySelectorAll("#nav button").forEach(b=>b.toggleAttribute("aria-current",b.dataset.go===v)||(b.dataset.go===v&&b.setAttribute("aria-current","page")));
+  document.querySelectorAll("#nav button").forEach(b=>{b.dataset.go===v?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current")});
+  if(v==="friends")loadFriends();
+  if(v==="emergency"&&map) setTimeout(()=>map.invalidateSize(),80);
+  if(v==="emergency"&&S) renderEmergency();
+  window.scrollTo({top:0});
+}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g)go(g.dataset.go)});
+$("alertpill").addEventListener("click",()=>go("emergency"));
+
+/* pipeline + network */
+function drawPipes(){
+  const h=NODES.map(([k,l],i)=>`<span class="pn" data-k="${k}">${l}</span>${i<NODES.length-1?'<span class="mut">›</span>':""}`).join("");
+  $("pipe").innerHTML=h;$("pipe2").innerHTML=h;
+  $("nodes").innerHTML=Object.entries(AGENTS).map(([k,a])=>`<g class="an${k===selAg?" sel":""}" data-ag="${k}" tabindex="0" role="button" aria-label="${a.n}"><rect x="${a.x-95}" y="${a.y-28}" width="190" height="56" rx="14"/><text x="${a.x}" y="${a.y+5}">${a.n}</text></g>`).join("");
+  $("agcards").innerHTML=Object.entries(AGENTS).map(([k,a])=>`<button class="ag" data-ag="${k}" data-go="agents"><svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="#111" stroke-width="1.4"><path d="M15 3 27 25H3z"/>${k==="patient"?'<circle cx="15" cy="18" r="3" fill="#111"/>':k==="caregiver"?'<path d="M9 21h12M15 11v10"/>':k==="clinician"?'<path d="M15 9v12M9 15h12"/>':'<path d="M15 10v6M15 20v.5"/>'}</svg><h3>${a.n}</h3><div class="mut">${esc(a.t[0])}</div></button>`).join("");
+  detail();
+}
+function detail(){const a=AGENTS[selAg];$("agdetail").innerHTML=`<h3>${a.n}</h3><ul class="pl">${a.t.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  document.querySelectorAll(".an").forEach(n=>n.classList.toggle("sel",n.dataset.ag===selAg))}
+function pickAgent(e){const n=e.target.closest("[data-ag]");if(n){selAg=n.dataset.ag;detail()}}
+document.addEventListener("click",pickAgent);
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset?.ag){e.preventDefault();pickAgent(e)}});
+function animate(trace){
+  timers.forEach(clearTimeout);timers=[];
+  const pn=k=>document.querySelectorAll(`.pn[data-k="${k}"]`);
+  document.querySelectorAll(".pn").forEach(n=>n.className="pn");
+  const order=(trace||[]).map(t=>t.split(":")[0]);
+  order.forEach((k,i)=>timers.push(setTimeout(()=>{
+    if(i>0)pn(order[i-1]).forEach(n=>n.className="pn done");
+    pn(k).forEach(n=>n.className="pn on");
+    const ag=Object.entries(AGENTS).find(([,a])=>a.b.includes(k));
+    if(ag){const el=document.querySelector(`.an[data-ag="${ag[0]}"]`);if(el){el.classList.remove("pulse");void el.getBBox();el.classList.add("pulse")}}
+  },i*550)));
+  timers.push(setTimeout(()=>{const l=order[order.length-1];pn(l).forEach(n=>n.className="pn done");document.querySelectorAll(".an").forEach(n=>n.classList.remove("pulse"))},order.length*550+900));
+}
+
+/* chat */
+function bubble(role,text){const d=document.createElement("div");d.className="msg "+role;d.textContent=text;$("log").appendChild(d);$("log").scrollTop=$("log").scrollHeight;return d}
+async function send(text){
+  text=(text??$("input").value).trim(); if(!text||busy)return;
+  busy=true;$("send").disabled=true;$("input").value="";
+  bubble("user",text);
+  const wait=bubble("sys","Agents are working… real models can take up to a minute.");
+  try{
+    const body={message:text}; if(myLoc){body.lat=myLoc[0];body.lon=myLoc[1]}
+    const r=await api("/api/chat",body); wait.remove();
+    bubble("bot",r.final_reply||r.reply||"(no reply)");
+    animate(r.trace);
+    if(r.risk)bubble("sys",`Risk: ${r.risk.level} · ${r.risk.reasons.join("; ")||"no concerns found"}`);
+    S=await api("/api/state");render();
+    if(["HIGH","CRITICAL"].includes(r.risk?.level)){toast("Emergency recommendation ready");go("emergency")}
+  }catch(e){wait.remove();bubble("sys","Error: "+e.message)}
+  busy=false;$("send").disabled=false;
+}
+
+/* helpers */
+function spark(vals){
+  const v=vals.filter(x=>x!=null);
+  if(v.length<2)return `<div class="mut">${v.length?"1 reading so far":"No readings yet"}</div>`;
+  const w=220,h=46,min=Math.min(...v),max=Math.max(...v),sp=(max-min)||1;
+  const p=v.map((x,i)=>`${(i/(v.length-1))*(w-8)+4},${h-6-((x-min)/sp)*(h-12)}`).join(" ");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="trend"><polyline fill="none" stroke="#111" stroke-width="1.6" points="${p}"/></svg>`;
+}
+const noteItem=n=>`<li><div class="row">${badge(n.level)}<span class="mut">${esc(n.ts)}</span></div><div style="white-space:pre-wrap;margin-top:4px">${esc(n.message)}</div></li>`;
+const medRows=(M)=>(M||[]).map(m=>`<div class="med"><div><b>${esc(m.name)}</b> ${esc(m.dose)}<div class="mut">${esc((m.times||[]).join(", "))}</div></div><div class="row"><button class="btn s" data-dose="taken" data-name="${esc(m.name)}">Taken</button><button class="btn s o" data-dose="skipped" data-name="${esc(m.name)}">Skipped</button></div></div>`).join("")||empty("No medicines on record.");
+
+/* render */
+function render(){
+  if(!S)return;
+  const p=S.profile||{},rn=S.risk_now;
+  const who=p.name?`${p.name}, ${p.age} · ${(p.chronic_conditions||[]).join(", ")}`:"No patient";
+  $("who").textContent=who;$("who2").textContent=who;
+  $("status").innerHTML=(rn?`Risk ${badge(rn.level)}`:"")+(S.mock_ai?' <span class="tag k">MOCK AI (fake replies)</span>':"")+(S.simulated_availability?' <span class="tag k">SIMULATED bed data</span>':"");
+  $("prof").innerHTML=Object.entries(p).filter(([,v])=>v!=null&&v!=="").map(([k,v])=>`<dt>${esc(k.replace(/_/g," "))}</dt><dd>${esc(Array.isArray(v)?v.join(", "):typeof v==="object"?JSON.stringify(v):v)}</dd>`).join("")||"<dd>No profile.</dd>";
+  const due=(S.due_now||[]).map(m=>`<div class="due">Time to take ${esc(m.name)} ${esc(m.dose)}</div>`).join("");
+  $("due").innerHTML=due;$("due2").innerHTML=due;
+  $("meds").innerHTML=medRows(S.medications);$("meds2").innerHTML=medRows(S.medications);
+  $("stat").innerHTML=rn?`${badge(rn.level)}<div class="mut" style="margin:6px 0">${esc(rn.ts)}</div><div>${esc((rn.reasons||[]).join("; ")||"No concerns.")}</div>`:empty("No assessment yet. Send a message to start.");
+  $("symp").innerHTML=(S.symptoms||[]).map(s=>`<tr><td>${esc(s.ts)}</td><td>${esc(s.symptom_en)}</td><td>${esc(s.severity??"")}</td><td>${esc(s.duration)}</td></tr>`).join("")||'<tr><td colspan="4" class="mut">None recorded.</td></tr>';
+  const a=S.adherence,at=a==null?"–":a+"%";$("adh").textContent=at;$("adh2").textContent=at;$("adhbar").style.width=(a||0)+"%";
+  $("cg-risk").innerHTML=$("stat").innerHTML;
+  const cg=(S.notifications||[]).filter(n=>n.audience.startsWith("caregiver"));
+  $("cg-notes").innerHTML=cg.map(noteItem).join("")||'<li class="mut">Nothing sent yet.</li>';
+  const cl=(S.notifications||[]).filter(n=>n.audience==="clinician");
+  $("cl-notes").innerHTML=cl.map(noteItem).join("")||'<li class="mut">No escalations yet.</li>';
+  $("sbar").textContent=S.summary?S.summary.text:"No summary yet. It is written when a message is MEDIUM risk or higher.";
+  $("sbar-ts").textContent=S.summary?"Written "+S.summary.ts:"";
+  $("risk-hist").innerHTML=(S.risk_history||[]).map(r=>`<li><div class="row">${badge(r.level)}<span class="mut">${esc(r.ts)} · score ${esc(r.score)}</span></div><div class="mut">${esc((r.reasons||[]).join("; "))}</div></li>`).join("")||'<li class="mut">No history yet.</li>';
+  // care plan from live data
+  const meds=(S.medications||[]).map(m=>`${esc(m.name)} ${esc(m.dose)}`).join("<br>")||"None on record";
+  $("plan").innerHTML=`<div class="card"><h3>Conditions</h3>${esc((p.chronic_conditions||[]).join(", ")||"None on record")}</div>
+   <div class="card"><h3>Medicines</h3>${meds}</div>
+   <div class="card"><h3>Adherence</h3><div class="big">${at}</div></div>
+   <div class="card"><h3>Current risk</h3>${$("stat").innerHTML}</div>`;
+  const sel=$("missmed"),names=(S.medications||[]).map(m=>m.name);
+  if(sel.dataset.k!==names.join("|")){const keep=sel.value;sel.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join("");if(names.includes(keep))sel.value=keep;sel.dataset.k=names.join("|")}
+  const pill=$("alertpill");
+  if(S.emergency){pill.hidden=false;pill.textContent="Emergency · "+S.emergency.recommendation.level}else pill.hidden=true;
+  if(cur==="emergency")renderEmergency();
+}
+
+function renderEmergency(){
+  const em=S&&S.emergency;
+  $("em-empty").hidden=!!em;$("em").hidden=!em; if(!em)return;
+  const rec=em.recommendation;
+  $("em-banner").className="banner"+(rec.level==="CRITICAL"?" crit":"");
+  $("em-banner").innerHTML=`${badge(rec.level)} &nbsp;${esc(rec.urgency)}`;
+  const amb=(rec.contacts.ambulance||"").split(" ")[0];
+  $("em-calls").innerHTML=`<a class="call" href="tel:${esc(rec.contacts.emergency)}">Call ${esc(rec.contacts.emergency)}</a><a class="call" href="tel:${esc(amb)}">Ambulance ${esc(amb)}</a><span class="mut">${esc(rec.contacts.ambulance)}</span>`;
+  const rows=[["Transport",rec.transport],["Go to",rec.facility_type],["Specialist",`${rec.specialty} (${rec.specialty_reason})`],["Your own doctor",em.own_doctor?`${em.own_doctor.name} · ${em.own_doctor.specialty}`:"none on record for this specialty"],["Because",(rec.personalized_because||[]).join("; ")],["Generated",em.ts]];
+  $("em-kv").innerHTML=rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("em-fac").innerHTML=(em.facilities||[]).map((f,i)=>`<li><b>${i+1}. ${esc(f.name)}</b> · ${esc(f.distance_km)} km <span class="tag">${esc(f.estimated_type)}</span>${f.availability.simulated?' <span class="tag k">SIMULATED</span>':""}<div class="mut">${esc(f.availability.status)}</div>${(f.match_notes||[]).length?`<div class="mut">${esc(f.match_notes.join("; "))}</div>`:""}</li>`).join("");
+  if((em.nearby_specialists||[]).length)$("em-fac").innerHTML+=`<li><b>Nearby ${esc(rec.specialty)} listings (OpenStreetMap)</b><div class="mut">${em.nearby_specialists.map(s=>esc(s.name)+" ("+esc(s.distance_km)+" km)").join(" · ")}</div></li>`;
+  drawMap(em.facilities||[]);
+}
+function drawMap(fac){
+  const note=$("map-note");
+  if(typeof L==="undefined"){note.textContent="Map library did not load (needs internet). The ranked list still works.";return}
+  const c=myLoc||S.default_location;
+  if(!map){map=L.map("map").setView(c,13);L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap"}).addTo(map);layer=L.layerGroup().addTo(map)}
+  layer.clearLayers();L.circleMarker(c,{color:"#111"}).addTo(layer).bindPopup("Patient");
+  const pts=[c];fac.forEach((f,i)=>{if(f.lat!=null){L.marker([f.lat,f.lon]).addTo(layer).bindPopup(`${i+1}. ${f.name} (${f.distance_km} km)`);pts.push([f.lat,f.lon])}});
+  note.textContent=fac.some(f=>f.lat!=null)?"":"No map positions available (offline or sample data).";
+  if(pts.length>1)map.fitBounds(pts,{padding:[30,30]});
+  setTimeout(()=>map.invalidateSize(),50);
+}
+
+/* events */
+$("send").addEventListener("click",()=>send());
+$("input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+$("chips").innerHTML=SCENARIOS.map(([l],i)=>`<button class="chip" data-i="${i}">${esc(l)}</button>`).join("");
+$("chips").addEventListener("click",e=>{if(e.target.dataset.i)send(SCENARIOS[e.target.dataset.i][1])});
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-dose]");if(!b)return;
+  try{S=await api("/api/dose",{name:b.dataset.name,status:b.dataset.dose});render();toast(`${b.dataset.name}: marked ${b.dataset.dose}`)}catch(err){toast("Error: "+err.message)}
+});
+$("simmissed").addEventListener("click",async()=>{$("simmissed").disabled=true;try{S=await api("/api/demo/missed",$("missmed").value?{name:$("missmed").value}:{});render();toast("Missed dose simulated")}catch(e){toast(e.message)}$("simmissed").disabled=false});
+$("reset").addEventListener("click",async()=>{if(!confirm("Clear all demo data and start over?"))return;S=await api("/api/reset",{});$("log").innerHTML="";drawPipes();render();toast("Demo data reset")});
+$("geo").addEventListener("change",e=>{
+  if(!e.target.checked){myLoc=null;return}
+  navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{myLoc=[p.coords.latitude,p.coords.longitude]},()=>{e.target.checked=false;toast("Location denied. Using the demo location (Mumbai).")}):(e.target.checked=false);
+});
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){$("mic").disabled=true;$("mic").title="Voice input needs Chrome or Edge"}
+else $("mic").addEventListener("click",()=>{
+  const r=new SR();r.lang=$("lang").value;r.interimResults=false;$("mic").textContent="…";
+  r.onresult=e=>{$("input").value=e.results[0][0].transcript};
+  r.onend=()=>{$("mic").textContent="🎤"};r.onerror=()=>{$("mic").textContent="🎤"};r.start();
+});
+
+/* friends */
+let FR=null;
+async function loadFriends(){
+  try{FR=await api("/api/friends"+PQ);$("fr-off").hidden=true;$("fr-on").hidden=false;renderFriends()}
+  catch(e){$("fr-on").hidden=true;$("fr-off").hidden=false;$("fr-off").textContent="Friends isn’t available on the server yet."}
+}
+function friendCard(f){
+  const d=f.daily||{},M=d.medicines||[];
+  const taken=M.filter(m=>m.status==="taken"),missed=M.filter(m=>m.status==="missed"||m.status==="skipped");
+  const w=d.water_ml,g=d.water_goal_ml,pct=w!=null&&g?Math.min(100,Math.round(w/g*100)):null;
+  return `<div class="card"><div class="row" style="justify-content:space-between"><b style="font-size:18px">${esc(f.name)}</b>${missed.length?'<span class="lv lv-HIGH">NEEDS ATTENTION</span>':'<span class="lv lv-LOW">ON TRACK</span>'}</div>
+  <div class="mut">${esc([f.age?f.age+" years":"",d.last_checkin?"last check-in "+d.last_checkin:"No check-in yet today"].filter(Boolean).join(" · "))}</div>
+  <h3 style="margin-top:14px">Medicines today${M.length?` · ${taken.length} of ${M.length} taken`:""}</h3>
+  ${M.length?M.map(m=>`<div class="med"><span>${esc(m.name)}</span><span class="${m.status==="taken"?"mut":""}"><b>${esc(m.status==="skipped"?"missed":m.status)}</b></span></div>`).join(""):'<div class="mut">Nothing recorded today.</div>'}
+  <h3 style="margin-top:14px">Water today</h3>
+  ${pct!=null?`<div>${esc(w)} of ${esc(g)} ml</div><div class="bar"><i style="width:${pct}%"></i></div>`:'<div class="mut">Not recorded today.</div>'}
+  ${d.mood?`<div class="mut" style="margin-top:12px">Feeling: ${esc(d.mood)}</div>`:""}</div>`;
+}
+function renderFriends(){
+  const F=FR.friends||[],I=FR.incoming||[],O=FR.outgoing||[];
+  $("fr-in").innerHTML=(I.map(r=>`<div class="med"><b>${esc(r.name)}</b><div class="row"><button class="btn s" data-fr="${esc(r.id)}" data-ok="1">Accept</button><button class="btn s o" data-fr="${esc(r.id)}" data-ok="0">Decline</button></div></div>`).join("")+O.map(r=>`<div class="med"><div><b>${esc(r.name)}</b><div class="mut">Waiting for them to accept</div></div></div>`).join(""))||empty("No requests right now.");
+  $("fr-me").textContent=FR.me?"Your patient ID: "+FR.me.id+" (share it so friends can add you)":"";
+  $("fr-list").innerHTML=F.map(friendCard).join("")||`<div style="grid-column:1/-1">${empty("No friends yet. Add one using their patient ID or phone number.")}</div>`;
+}
+$("fr-add").addEventListener("click",async()=>{
+  const v=$("fr-id").value.trim();if(!v)return;$("fr-add").disabled=true;
+  try{const r=await api("/api/friends/request",WP({identifier:v}));$("fr-id").value="";$("fr-msg").textContent=r.message||"Request sent.";await loadFriends()}catch(e){$("fr-msg").textContent="Could not send: "+e.message}
+  $("fr-add").disabled=false;
+});
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-fr]");if(!b)return;
+  try{await api("/api/friends/respond",WP({id:b.dataset.fr,accept:b.dataset.ok==="1"}));await loadFriends();toast(b.dataset.ok==="1"?"Friend added":"Request declined")}catch(err){toast("Error: "+err.message)}
+});
+setInterval(()=>{if(cur==="friends"&&!document.hidden)loadFriends()},10000);
+
+/* switch patient */
+$("sw-now").textContent="Viewing as: "+(PID||"the default patient");
+$("sw-home").hidden=!PID;
+$("sw-go").addEventListener("click",()=>{const v=$("sw-id").value.trim();if(v)location.search="?pid="+encodeURIComponent(v)});
+$("sw-id").addEventListener("keydown",e=>{if(e.key==="Enter")$("sw-go").click()});
+$("sw-home").addEventListener("click",()=>{location.search=""});
+
+/* water */
+async function loadDaily(){
+  try{const d=await api("/api/daily"+PQ),g=d.water_goal_ml||2000,p=Math.min(100,Math.round(d.water_ml/g*100));
+    $("water").innerHTML=`<div class="big">${esc(d.water_ml)}<span class="mut" style="font-size:14px;letter-spacing:0"> of ${esc(g)} ml</span></div><div class="bar"><i style="width:${p}%"></i></div>`}
+  catch(e){$("water").innerHTML='<div class="mut">Not available on the server yet.</div>';$("drink").hidden=true}
+}
+$("drink").addEventListener("click",async()=>{$("drink").disabled=true;try{await api("/api/water",WP({ml:250}));await loadDaily();toast("Water logged")}catch(e){toast("Error: "+e.message)}$("drink").disabled=false});
+
+/* boot + polling */
+async function refresh(){try{S=await api("/api/state");$("err").hidden=true;if(!busy)render();loadDaily()}catch(e){$("err").hidden=false}}
+drawPipes();go("overview");
+bubble("bot","Hello! I am your care companion. Tell me how you feel, or tap an example below.");
+$("who").innerHTML='<span class="skel" style="display:inline-block;width:160px"></span>';
+refresh();setInterval(refresh,5000);
+</script>
+</body>
+</html>
