@@ -1,8 +1,0 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Nearest hospitals</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script></head>
-<body style="margin:0"><div id="map" style="height:100vh"></div><script>
-var m = L.map('map').setView([19.076,72.8777], 13);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OpenStreetMap'}).addTo(m);
-L.circleMarker([19.076,72.8777], {color:'red'}).addTo(m).bindPopup('Patient');L.marker([19.0763785,72.9054696]).addTo(m).bindPopup('Ashirvaad Heart Hospital' + ' (2.9 km)');L.marker([19.0762084,72.8780033]).addTo(m).bindPopup('New Noor Hospital' + ' (0.0 km)');L.marker([19.0791531,72.9039431]).addTo(m).bindPopup('Advanced Orthopaedic and Super Speciality Center' + ' (2.8 km)');
-</script></body></html>
